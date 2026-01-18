@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { ComparisonResult, VIEWPORT_PRESETS } from "@/lib/types";
 import { generateMarkdownReport, generateJSONReport } from "@/lib/reportGenerator";
 
@@ -78,14 +78,23 @@ export default function Home() {
     }
   };
 
-  const handleCopyMarkdown = () => {
+  const handleCopyMarkdown = useCallback(() => {
     if (!result) return;
     const report = generateMarkdownReport(result, selectedMismatches);
     navigator.clipboard.writeText(report.content);
-    alert("Markdown report copied to clipboard!");
-  };
+    // Better visual feedback - could be replaced with toast notification
+    const originalText = document.activeElement?.textContent;
+    if (document.activeElement) {
+      (document.activeElement as HTMLElement).textContent = '✓ COPIED!';
+      setTimeout(() => {
+        if (document.activeElement && originalText) {
+          (document.activeElement as HTMLElement).textContent = originalText;
+        }
+      }, 2000);
+    }
+  }, [result, selectedMismatches]);
 
-  const handleDownloadJSON = () => {
+  const handleDownloadJSON = useCallback(() => {
     if (!result) return;
     const report = generateJSONReport(result);
     const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
@@ -95,13 +104,13 @@ export default function Home() {
     a.download = `ui-fidelity-report-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  };
+  }, [result]);
 
-  const toggleMismatch = (id: string) => {
+  const toggleMismatch = useCallback((id: string) => {
     setSelectedMismatches(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
-  };
+  }, []);
 
   return (
     <main 
@@ -241,6 +250,7 @@ export default function Home() {
                   reader.readAsDataURL(file);
                 }
               }}
+              aria-label="Upload design mockup image"
             />
             <label 
               htmlFor="design-upload"
@@ -376,6 +386,7 @@ export default function Home() {
                       reader.readAsDataURL(file);
                     }
                   }}
+                  aria-label="Upload implementation screenshot"
                 />
                 <label 
                   htmlFor="impl-upload"
@@ -523,9 +534,26 @@ export default function Home() {
               fontWeight: 700,
               letterSpacing: '2px',
               borderRadius: '8px',
-              fontFamily: "'Orbitron', sans-serif"
+              fontFamily: "'Orbitron', sans-serif",
+              opacity: (loading || !designImage) ? 0.5 : 1,
+              cursor: (loading || !designImage) ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '12px'
             }}
+            aria-label="Start comparison analysis"
           >
+            {loading && (
+              <svg 
+                style={{ animation: 'spin 1s linear infinite', width: '20px', height: '20px' }}
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor"
+              >
+                <circle cx="12" cy="12" r="10" strokeWidth="3" strokeDasharray="31.4 31.4" strokeLinecap="round" />
+              </svg>
+            )}
             {loading ? "ANALYZING..." : "COMPARE"}
           </button>
         </div>

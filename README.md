@@ -1,22 +1,25 @@
 # UI Fidelity Checker
 
-A screenshot-based visual regression tool that compares design mockups with implementation screenshots and generates prioritized mismatch reports.
+A screenshot-based visual regression tool that compares design mockups with implementation screenshots and generates prioritized mismatch reports with a bold **Precision Studio** aesthetic.
 
-![UI Fidelity Checker](https://img.shields.io/badge/Next.js-16-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![Playwright](https://img.shields.io/badge/Playwright-Latest-green)
+![UI Fidelity Checker](https://img.shields.io/badge/Next.js-16.1.3-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue) ![Playwright](https://img.shields.io/badge/Playwright-1.57-green) ![Sharp](https://img.shields.io/badge/Sharp-0.34-red)
 
-## Features
+## ✨ Features
 
 - **Visual Comparison**: Upload design mockups and implementation screenshots for pixel-perfect comparison
-- **URL Screenshot Capture**: Enter a URL and capture screenshots with Desktop or Mobile viewport presets
-- **Automated Diff Generation**: Highlights visual differences with red overlay
+- **URL Screenshot Capture**: Enter a URL and capture screenshots with Desktop or Mobile viewport presets  
+- **Automated Diff Generation**: Highlights visual differences with red overlay using Pixelmatch algorithm
 - **Smart Categorization**: Automatically categorizes mismatches into Color, Typography, Spacing, or Component State
 - **Priority Ranking**: Assigns High/Medium/Low priority based on area and visibility
-- **Markdown Ticket Export**: Copy-paste ready tickets for issue tracking
+- **Interactive Selection**: Check/uncheck mismatches to include in report
+- **Markdown Ticket Export**: Copy-paste ready tickets for issue tracking with visual feedback
 - **JSON Report Export**: Downloadable structured reports with all mismatch data
+- **Modern UI**: Black background with neon green/cyan accents, Orbitron font, and dramatic visual effects
+- **Performance Optimized**: React hooks (useMemo, useCallback) for optimal rendering
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
 
@@ -40,36 +43,111 @@ npx playwright install chromium
 ### Run Locally
 
 ```bash
+# Development mode (with hot reload)
 npm run dev
+
+# Production build
+npm run build
+npm start
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+### Run Tests
+
+```bash
+npm test
+```
+
 ---
 
-## How to Use
+## 📖 How to Use
 
 ### Option 1: Upload Both Images
 
 1. **Upload Design Mockup**: Click the design upload area and select your mockup image (PNG/JPG)
-2. **Upload Implementation**: Select "Upload Image" and upload your implementation screenshot
+2. **Upload Implementation**: Select "Upload" tab and upload your implementation screenshot
 3. **Add Metadata** (Optional): Enter screen name and platform
 4. **Click Compare**: Wait for processing (usually 5-10 seconds)
-5. **Review Results**: See diff image and mismatch list
+5. **Review Results**: See similarity score, diff image and mismatch list
 6. **Export**: Select mismatches and copy as Markdown ticket or download JSON
 
 ### Option 2: Use URL Capture
 
 1. **Upload Design Mockup**: Upload your design image
-2. **Select "Enter URL"**: Switch to URL mode
+2. **Select "URL" Tab**: Switch to URL mode in Implementation section
 3. **Enter URL**: Type the implementation URL (e.g., `https://example.com`)
 4. **Select Viewport**: Choose Desktop (1440x900) or Mobile (390x844)
-5. **Click Compare**: Screenshot will be captured automatically
+5. **Click Compare**: Screenshot will be captured automatically via Playwright
 6. **Review & Export**: Same as Option 1
 
 ---
 
-## Demo Flow
+## 🎨 Tech Stack
+
+- **Frontend**: Next.js 16.1.3 (App Router, Turbopack), React 19, TypeScript 5.9
+- **Styling**: Tailwind CSS 4.x, Custom CSS with neon effects
+- **Fonts**: Orbitron (display), JetBrains Mono (monospace), Inter (body)
+- **Image Processing**: Sharp (normalization), Pixelmatch (diff generation)
+- **Screenshot**: Playwright (Chromium headless browser)
+- **Testing**: tsx with custom test suite
+
+---
+
+## 📦 Project Structure
+
+```
+UiFidelityChecker/
+├── app/
+│   ├── api/
+│   │   ├── compare/route.ts      # Main comparison endpoint
+│   │   └── screenshot/route.ts   # URL screenshot capture
+│   ├── page.tsx                  # Main UI component
+│   ├── layout.tsx                # Root layout
+│   └── globals.css               # Precision Studio styles
+├── lib/
+│   ├── types.ts                  # TypeScript definitions
+│   ├── imageProcessor.ts         # Sharp normalization
+│   ├── diffGenerator.ts          # Pixelmatch diff
+│   ├── regionExtractor.ts        # Mismatch region detection
+│   ├── categorizer.ts            # Smart categorization
+│   └── reportGenerator.ts        # MD/JSON exports
+├── __tests__/
+│   └── diffPipeline.test.ts      # Test suite
+├── public/                       # Static assets
+├── package.json                  # Dependencies
+└── README.md                     # This file
+```
+
+---
+
+## 🔧 Configuration
+
+### Viewport Presets
+
+Edit [lib/types.ts](lib/types.ts) to add custom viewports:
+
+```typescript
+export const VIEWPORT_PRESETS = {
+  desktop: { width: 1440, height: 900, label: "Desktop (1440x900)" },
+  mobile: { width: 390, height: 844, label: "Mobile (390x844)" },
+  // Add your own:
+  tablet: { width: 768, height: 1024, label: "Tablet (768x1024)" },
+};
+```
+
+### Categorization Heuristics
+
+Modify [lib/categorizer.ts](lib/categorizer.ts) to adjust mismatch detection:
+
+- **Typography**: Aspect ratio 3:1 to 15:1, area < 10000px²
+- **Spacing**: Thin strips (< 20px thick)
+- **Component State**: Square-ish (0.5-2.0 ratio), medium size
+- **Color**: Large areas (> 20000px²)
+
+---
+
+## 🧪 Demo Flow
 
 ### Example Comparison
 
