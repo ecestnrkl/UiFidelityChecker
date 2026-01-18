@@ -1,0 +1,421 @@
+"use client";
+
+import { useState } from "react";
+import { ComparisonResult, VIEWPORT_PRESETS } from "@/lib/types";
+import { generateMarkdownReport, generateJSONReport } from "@/lib/reportGenerator";
+
+export default function Home() {
+  const [designImage, setDesignImage] = useState<string | null>(null);
+  const [implementationImage, setImplementationImage] = useState<string | null>(null);
+  const [implementationMode, setImplementationMode] = useState<"upload" | "url">("upload");
+  const [implementationUrl, setImplementationUrl] = useState("");
+  const [viewport, setViewport] = useState<keyof typeof VIEWPORT_PRESETS>("desktop");
+  const [screenName, setScreenName] = useState("");
+  const [platform, setPlatform] = useState<"" | "web" | "mobile">("");
+  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<ComparisonResult | null>(null);
+  const [selectedMismatches, setSelectedMismatches] = useState<string[]>([]);
+
+  const handleCompare = async () => {
+    setError(null);
+    setLoading(true);
+    setResult(null);
+
+    try {
+      let implImage = implementationImage;
+
+      if (implementationMode === "url") {
+        if (!implementationUrl) {
+          throw new Error("Please enter a URL");
+        }
+
+        const screenshotRes = await fetch("/api/screenshot", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: implementationUrl, viewport }),
+        });
+
+        if (!screenshotRes.ok) {
+          const errorData = await screenshotRes.json();
+          throw new Error(errorData.error || "Failed to capture screenshot");
+        }
+
+        const screenshotData = await screenshotRes.json();
+        implImage = screenshotData.image;
+        setImplementationImage(implImage);
+      }
+
+      if (!designImage || !implImage) {
+        throw new Error("Please upload both images");
+      }
+
+      const compareRes = await fetch("/api/compare", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          designImage,
+          implementationImage: implImage,
+          screenName: screenName || undefined,
+          platform: platform || undefined,
+        }),
+      });
+
+      if (!compareRes.ok) {
+        const errorData = await compareRes.json();
+        throw new Error(errorData.error || "Failed to compare images");
+      }
+
+      const compareData: ComparisonResult = await compareRes.json();
+      setResult(compareData);
+      setSelectedMismatches(compareData.mismatches.map(m => m.id));
+
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCopyMarkdown = () => {
+    if (!result) return;
+    const report = generateMarkdownReport(result, selectedMismatches);
+    navigator.clipboard.writeText(report.content);
+    alert("Markdown report copied to clipboard!");
+  };
+
+  const handleDownloadJSON = () => {
+    if (!result) return;
+    const report = generateJSONReport(result);
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ui-fidelity-report-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const toggleMismatch = (id: string) => {
+    setSelectedMismatches(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  return (
+    <main className="min-h-screen relative" style={{ zIndex: 2 }}>
+      {/* Hero Section */}
+      <div className="container mx-auto px-4 py-12 md:py-20">
+        {/* Header with asymmetric layout */}
+        <div className="mb-16 md:mb-24">
+          <div className="flex items-start justify-between gap-8 flex-wrap">
+            <div className="flex-1 min-w-[300px]">
+              <h1 className="text-6xl md:text-8xl font-black mb-4 leading-none animate-slide-up" 
+                  style={{ fontFamily: "'Orbitron', sans-serif" }}>
+                <span className="glow-text" style={{ color: 'var(--accent-neon)' }}>UI</span>
+                <br />
+                <span className="text-white">FIDELITY</span>
+              </h1>
+              <div className="h-1 w-32 bg-gradient-to-r from-[var(--accent-neon)] to-[var(--accent-cyan)] mb-6 animate-slide-right delay-100"></div>
+              <p className="text-lg md:text-xl text-[var(--text-secondary)] max-w-md animate-fade-in delay-200" 
+                 style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                Pixel-perfect visual regression analysis.
+                <br />
+                <span className="text-[var(--accent-cyan)]">Find every mismatch.</span>
+              </p>
+            </div>
+            
+            {/* Stats Box */}
+            <div className="card-terminal p-6 animate-fade-in delay-300" 
+                 style={{ 
+                   borderLeft: '3px solid var(--accent-neon)',
+                   minWidth: '200px'
+                 }}>
+              <div className="text-4xl font-bold mb-2" style={{ fontFamily: "'Orbitron', sans-serif", color: 'var(--accent-neon)' }}>
+                {result ? `${result.similarity}%` : '---'}
+              </div>
+              <div className="text-sm text-[var(--text-secondary)] uppercase tracking-wider">
+                Similarity Score
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Input Section - Asymmetric Grid */}
+        <div className="grid md:grid-cols-12 gap-6 mb-12">
+          {/* Design Upload - Spans 5 columns */}
+          <div className="md:col-span-5 animate-slide-up delay-100">
+            <div className="card-terminal p-6 h-full glow-neon">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-2 h-2 bg-[var(--accent-neon)] rounded-full animate-pulse"></div>
+                <h2 className="text-sm uppercase tracking-widest" style={{ fontFamily: "'Orbitron', sans-serif", color: 'var(--accent-neon)' }}>
+                  Design Mockup
+                </h2>
+              </div>
+              
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                id="design-upload"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = () => setDesignImage(reader.result as string);
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
+              <label htmlFor="design-upload" className="upload-zone rounded-lg p-8 h-64 flex items-center justify-center cursor-pointer relative group block">
+                {designImage ? (
+                  <img src={designImage} alt="Design" className="max-h-full max-w-full object-contain rounded" />
+                ) : (
+                  <div className="text-center">
+                    <div className="text-6xl mb-4 text-[var(--accent-neon)]">↑</div>
+                    <p className="text-[var(--text-secondary)] text-sm">DROP OR CLICK</p>
+                  </div>
+                )}
+              </label>
+            </div>
+          </div>
+
+          {/* Implementation - Spans 7 columns */}
+          <div className="md:col-span-7 animate-slide-up delay-200">
+            <div className="card-terminal p-6 h-full glow-cyan">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-[var(--accent-cyan)] rounded-full animate-pulse"></div>
+                  <h2 className="text-sm uppercase tracking-widest" style={{ fontFamily: "'Orbitron', sans-serif", color: 'var(--accent-cyan)' }}>
+                    Implementation
+                  </h2>
+                </div>
+                
+                {/* Mode Toggle */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setImplementationMode("upload")}
+                    className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
+                      implementationMode === "upload"
+                        ? "bg-[var(--accent-cyan)] text-black font-bold"
+                        : "bg-transparent border border-[var(--border)] text-[var(--text-secondary)]"
+                    }`}
+                    style={{ fontFamily: "'Orbitron', sans-serif" }}
+                  >
+                    Upload
+                  </button>
+                  <button
+                    onClick={() => setImplementationMode("url")}
+                    className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
+                      implementationMode === "url"
+                        ? "bg-[var(--accent-cyan)] text-black font-bold"
+                        : "bg-transparent border border-[var(--border)] text-[var(--text-secondary)]"
+                    }`}
+                    style={{ fontFamily: "'Orbitron', sans-serif" }}
+                  >
+                    URL
+                  </button>
+                </div>
+              </div>
+
+              {implementationMode === "upload" ? (
+                <>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    id="impl-upload"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = () => setImplementationImage(reader.result as string);
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                  <label htmlFor="impl-upload" className="upload-zone rounded-lg p-8 h-64 flex items-center justify-center cursor-pointer block">
+                    {implementationImage ? (
+                      <img src={implementationImage} alt="Implementation" className="max-h-full max-w-full object-contain rounded" />
+                    ) : (
+                      <div className="text-center">
+                        <div className="text-6xl mb-4 text-[var(--accent-cyan)]">↑</div>
+                        <p className="text-[var(--text-secondary)] text-sm">DROP OR CLICK</p>
+                      </div>
+                    )}
+                  </label>
+                </>
+              ) : (
+                <div className="space-y-4">
+                  <input
+                    type="url"
+                    placeholder="https://example.com"
+                    value={implementationUrl}
+                    onChange={(e) => setImplementationUrl(e.target.value)}
+                    className="input-terminal w-full px-4 py-3 rounded text-sm"
+                  />
+                  <select 
+                    value={viewport}
+                    onChange={(e) => setViewport(e.target.value as keyof typeof VIEWPORT_PRESETS)}
+                    className="input-terminal w-full px-4 py-3 rounded text-sm"
+                  >
+                    {Object.entries(VIEWPORT_PRESETS).map(([key, preset]) => (
+                      <option key={key} value={key}>{preset.label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Metadata + Action Row */}
+        <div className="grid md:grid-cols-12 gap-6 mb-12">
+          <div className="md:col-span-9 space-y-4 animate-slide-up delay-300">
+            <div className="grid md:grid-cols-2 gap-4">
+              <input
+                type="text"
+                placeholder="Screen name (optional)"
+                value={screenName}
+                onChange={(e) => setScreenName(e.target.value)}
+                className="input-terminal px-4 py-3 rounded text-sm"
+              />
+              <select 
+                value={platform}
+                onChange={(e) => setPlatform(e.target.value as "" | "web" | "mobile")}
+                className="input-terminal px-4 py-3 rounded text-sm"
+              >
+                <option value="">Platform (optional)</option>
+                <option value="web">Web</option>
+                <option value="mobile">Mobile</option>
+              </select>
+            </div>
+
+            {error && (
+              <div className="border-l-4 border-red-500 bg-red-500/10 p-4 rounded">
+                <p className="text-red-400 text-sm" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  ⚠ {error}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="md:col-span-3 flex items-end animate-slide-up delay-400">
+            <button 
+              onClick={handleCompare}
+              disabled={loading || !designImage}
+              className="btn-neon w-full py-4 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              {loading ? "ANALYZING..." : "COMPARE"}
+            </button>
+          </div>
+        </div>
+
+        {/* Results Section */}
+        {result && (
+          <div className="space-y-8 animate-fade-in">
+            {/* Preview Grid */}
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="card-terminal p-4">
+                <div className="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2">Design</div>
+                <img src={designImage!} alt="Design" className="w-full rounded border border-[var(--border)]" />
+              </div>
+              <div className="card-terminal p-4">
+                <div className="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2">Implementation</div>
+                <img src={implementationImage!} alt="Implementation" className="w-full rounded border border-[var(--border)]" />
+              </div>
+              <div className="card-terminal p-4 glow-neon">
+                <div className="text-xs uppercase tracking-wider text-[var(--accent-neon)] mb-2">Diff Analysis</div>
+                <img src={result.diffImageUrl} alt="Diff" className="w-full rounded border border-[var(--accent-neon)]" />
+              </div>
+            </div>
+
+            {/* Mismatches */}
+            {result.mismatches.length > 0 ? (
+              <div className="card-terminal p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold" style={{ fontFamily: "'Orbitron', sans-serif" }}>
+                    <span className="text-[var(--accent-neon)]">{result.mismatches.length}</span> MISMATCHES
+                  </h3>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleCopyMarkdown}
+                      disabled={selectedMismatches.length === 0}
+                      className="px-6 py-2 bg-[var(--accent-neon)] text-black text-xs uppercase tracking-wider font-bold rounded disabled:opacity-30 hover:bg-[var(--accent-cyan)] transition-all"
+                      style={{ fontFamily: "'Orbitron', sans-serif" }}
+                    >
+                      COPY MD ({selectedMismatches.length})
+                    </button>
+                    <button
+                      onClick={handleDownloadJSON}
+                      className="px-6 py-2 border border-[var(--accent-cyan)] text-[var(--accent-cyan)] text-xs uppercase tracking-wider font-bold rounded hover:bg-[var(--accent-cyan)] hover:text-black transition-all"
+                      style={{ fontFamily: "'Orbitron', sans-serif" }}
+                    >
+                      JSON ↓
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {result.mismatches.map((mismatch, idx) => (
+                    <div
+                      key={mismatch.id}
+                      className="border border-[var(--border)] rounded p-4 hover:border-[var(--accent-neon)] transition-all group"
+                      style={{ animationDelay: `${idx * 0.05}s` }}
+                    >
+                      <div className="flex gap-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedMismatches.includes(mismatch.id)}
+                          onChange={() => toggleMismatch(mismatch.id)}
+                          className="w-5 h-5 accent-[var(--accent-neon)]"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className={`px-3 py-1 text-xs uppercase tracking-wider font-bold ${
+                              mismatch.priority === "high"
+                                ? "bg-red-500/20 text-red-400 border border-red-500/50"
+                                : mismatch.priority === "medium"
+                                ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/50"
+                                : "bg-blue-500/20 text-blue-400 border border-blue-500/50"
+                            }`}>
+                              {mismatch.priority}
+                            </span>
+                            <span className="px-3 py-1 text-xs uppercase tracking-wider bg-[var(--accent-neon)]/10 text-[var(--accent-neon)] border border-[var(--accent-neon)]/30">
+                              {mismatch.category}
+                            </span>
+                            <h4 className="font-bold text-sm" style={{ fontFamily: "'Orbitron', sans-serif" }}>
+                              {mismatch.title}
+                            </h4>
+                          </div>
+                          <p className="text-sm text-[var(--text-secondary)] mb-2">
+                            {mismatch.explanation}
+                          </p>
+                          <div className="text-xs text-[var(--text-secondary)]">
+                            <strong className="text-[var(--accent-cyan)]">Fix:</strong> {mismatch.suggestedFix}
+                          </div>
+                          <div className="text-xs text-[var(--text-secondary)] mt-2 opacity-50" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                            [{mismatch.bbox.x}, {mismatch.bbox.y}] {mismatch.bbox.width}×{mismatch.bbox.height}px
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="card-terminal p-12 text-center glow-neon">
+                <div className="text-6xl mb-4">✓</div>
+                <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Orbitron', sans-serif", color: 'var(--accent-neon)' }}>
+                  PERFECT MATCH
+                </h3>
+                <p className="text-[var(--text-secondary)]">No significant differences detected</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}

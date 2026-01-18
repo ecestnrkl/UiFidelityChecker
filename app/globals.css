@@ -1,0 +1,296 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #141414;
+  --accent-neon: #00ff88;
+  --accent-cyan: #00d4ff;
+  --accent-pink: #ff00ff;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --border: rgba(255, 255, 255, 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Animated background grid */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+  z-index: 0;
+  animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(50px, 50px);
+  }
+}
+
+/* Noise texture overlay */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.5;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-neon);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-cyan);
+}
+
+/* Glow effects */
+.glow-neon {
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.3),
+              0 0 40px rgba(0, 255, 136, 0.1);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3),
+              0 0 40px rgba(0, 212, 255, 0.1);
+}
+
+.glow-text {
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5),
+               0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+/* Animation utilities */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-slide-up {
+  animation: slideInUp 0.6s ease-out forwards;
+}
+
+.animate-slide-right {
+  animation: slideInRight 0.6s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+/* Stagger delays */
+.delay-100 {
+  animation-delay: 0.1s;
+  opacity: 0;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+  opacity: 0;
+}
+
+.delay-300 {
+  animation-delay: 0.3s;
+  opacity: 0;
+}
+
+.delay-400 {
+  animation-delay: 0.4s;
+  opacity: 0;
+}
+
+/* Custom button styles */
+.btn-neon {
+  position: relative;
+  background: transparent;
+  border: 2px solid var(--accent-neon);
+  color: var(--accent-neon);
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 1rem 2.5rem;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.btn-neon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--accent-neon);
+  transition: left 0.3s ease;
+  z-index: -1;
+}
+
+.btn-neon:hover {
+  color: var(--bg-primary);
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+}
+
+.btn-neon:hover::before {
+  left: 0;
+}
+
+/* Card styles */
+.card-terminal {
+  background: rgba(20, 20, 20, 0.8);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-terminal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent,
+    var(--accent-neon),
+    transparent
+  );
+  animation: scanline 3s linear infinite;
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Input styles */
+.input-terminal {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.3s ease;
+}
+
+.input-terminal:focus {
+  outline: none;
+  border-color: var(--accent-neon);
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+}
+
+.input-terminal::placeholder {
+  color: var(--text-secondary);
+}
+
+/* File upload zones */
+.upload-zone {
+  border: 2px dashed var(--border);
+  background: rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.upload-zone:hover {
+  border-color: var(--accent-neon);
+  background: rgba(0, 255, 136, 0.05);
+}
+
+.upload-zone::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, 
+    transparent,
+    rgba(0, 255, 136, 0.1),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.upload-zone:hover::after {
+  opacity: 1;
+}
