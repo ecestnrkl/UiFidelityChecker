@@ -104,187 +104,385 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen relative" style={{ zIndex: 2 }}>
-      {/* Hero Section */}
-      <div className="container mx-auto px-4 py-12 md:py-20">
-        {/* Header with asymmetric layout */}
-        <div className="mb-16 md:mb-24">
-          <div className="flex items-start justify-between gap-8 flex-wrap">
-            <div className="flex-1 min-w-[300px]">
-              <h1 className="text-6xl md:text-8xl font-black mb-4 leading-none animate-slide-up" 
-                  style={{ fontFamily: "'Orbitron', sans-serif" }}>
-                <span className="glow-text" style={{ color: 'var(--accent-neon)' }}>UI</span>
-                <br />
-                <span className="text-white">FIDELITY</span>
-              </h1>
-              <div className="h-1 w-32 bg-gradient-to-r from-[var(--accent-neon)] to-[var(--accent-cyan)] mb-6 animate-slide-right delay-100"></div>
-              <p className="text-lg md:text-xl text-[var(--text-secondary)] max-w-md animate-fade-in delay-200" 
-                 style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                Pixel-perfect visual regression analysis.
-                <br />
-                <span className="text-[var(--accent-cyan)]">Find every mismatch.</span>
-              </p>
+    <main 
+      className="min-h-screen w-full"
+      style={{ 
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif",
+        padding: '48px 24px'
+      }}
+    >
+      <div 
+        className="mx-auto"
+        style={{ 
+          maxWidth: '1400px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '32px'
+        }}
+      >
+        
+        {/* Hero + Score */}
+        <div style={{ display: 'flex', gap: '32px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <h1 
+              className="text-6xl lg:text-7xl font-black mb-6 leading-tight"
+              style={{ fontFamily: "'Orbitron', sans-serif" }}
+            >
+              <span className="glow-text" style={{ color: 'var(--accent-neon)' }}>UI</span>
+              <br />
+              <span className="text-white">FIDELITY</span>
+            </h1>
+            <div 
+              style={{ 
+                height: '6px', 
+                width: '120px', 
+                background: 'linear-gradient(to right, var(--accent-neon), var(--accent-cyan))',
+                marginBottom: '24px'
+              }}
+            />
+            <p 
+              className="text-lg"
+              style={{ 
+                color: 'var(--text-secondary)',
+                maxWidth: '600px',
+                lineHeight: '1.7',
+                fontFamily: "'JetBrains Mono', monospace"
+              }}
+            >
+              Pixel-perfect visual regression analysis.
+              <br />
+              <span style={{ color: 'var(--accent-cyan)', fontWeight: 600 }}>Find every mismatch.</span>
+            </p>
+          </div>
+          
+          <div 
+            className="card-terminal"
+            style={{ 
+              flex: '0 1 300px',
+              padding: '32px 24px',
+              borderRadius: '16px',
+              borderLeft: '4px solid var(--accent-neon)'
+            }}
+          >
+            <div 
+              className="glow-text"
+              style={{ 
+                fontSize: '64px',
+                fontWeight: 900,
+                marginBottom: '12px',
+                fontFamily: "'Orbitron', sans-serif",
+                color: 'var(--accent-neon)'
+              }}
+            >
+              {result ? `${result.similarity}%` : '---'}
             </div>
-            
-            {/* Stats Box */}
-            <div className="card-terminal p-6 animate-fade-in delay-300" 
-                 style={{ 
-                   borderLeft: '3px solid var(--accent-neon)',
-                   minWidth: '200px'
-                 }}>
-              <div className="text-4xl font-bold mb-2" style={{ fontFamily: "'Orbitron', sans-serif", color: 'var(--accent-neon)' }}>
-                {result ? `${result.similarity}%` : '---'}
-              </div>
-              <div className="text-sm text-[var(--text-secondary)] uppercase tracking-wider">
-                Similarity Score
-              </div>
+            <div 
+              style={{ 
+                fontSize: '11px',
+                textTransform: 'uppercase',
+                letterSpacing: '2px',
+                color: 'var(--text-secondary)',
+                fontWeight: 700
+              }}
+            >
+              Similarity Score
             </div>
           </div>
         </div>
 
-        {/* Input Section - Asymmetric Grid */}
-        <div className="grid md:grid-cols-12 gap-6 mb-12">
-          {/* Design Upload - Spans 5 columns */}
-          <div className="md:col-span-5 animate-slide-up delay-100">
-            <div className="card-terminal p-6 h-full glow-neon">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-2 h-2 bg-[var(--accent-neon)] rounded-full animate-pulse"></div>
-                <h2 className="text-sm uppercase tracking-widest" style={{ fontFamily: "'Orbitron', sans-serif", color: 'var(--accent-neon)' }}>
-                  Design Mockup
+        {/* Upload Section */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '32px' }}>
+          
+          {/* Design Upload */}
+          <div 
+            className="card-terminal glow-neon"
+            style={{ 
+              padding: '24px',
+              borderRadius: '16px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div 
+                style={{ 
+                  width: '8px', 
+                  height: '8px', 
+                  borderRadius: '50%', 
+                  backgroundColor: 'var(--accent-neon)',
+                  animation: 'pulse 2s infinite'
+                }}
+              />
+              <h2 
+                style={{ 
+                  fontSize: '13px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '2px',
+                  fontWeight: 700,
+                  color: 'var(--accent-neon)',
+                  fontFamily: "'Orbitron', sans-serif"
+                }}
+              >
+                Design Mockup
+              </h2>
+            </div>
+            
+            <input
+              type="file"
+              accept="image/*"
+              id="design-upload"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = () => setDesignImage(reader.result as string);
+                  reader.readAsDataURL(file);
+                }
+              }}
+            />
+            <label 
+              htmlFor="design-upload"
+              className="upload-zone"
+              style={{ 
+                minHeight: '320px',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                padding: '24px'
+              }}
+            >
+              {designImage ? (
+                <img 
+                  src={designImage} 
+                  alt="Design" 
+                  style={{ 
+                    maxWidth: '100%', 
+                    maxHeight: '280px', 
+                    objectFit: 'contain',
+                    borderRadius: '8px'
+                  }} 
+                />
+              ) : (
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '72px', marginBottom: '16px', color: 'var(--accent-neon)' }}>↑</div>
+                  <p style={{ 
+                    fontSize: '13px', 
+                    textTransform: 'uppercase', 
+                    letterSpacing: '2px',
+                    color: 'var(--text-secondary)',
+                    fontWeight: 700
+                  }}>
+                    Drop or Click
+                  </p>
+                </div>
+              )}
+            </label>
+          </div>
+
+          {/* Implementation */}
+          <div 
+            className="card-terminal glow-cyan"
+            style={{ 
+              padding: '24px',
+              borderRadius: '16px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div 
+                  style={{ 
+                    width: '8px', 
+                    height: '8px', 
+                    borderRadius: '50%', 
+                    backgroundColor: 'var(--accent-cyan)',
+                    animation: 'pulse 2s infinite'
+                  }}
+                />
+                <h2 
+                  style={{ 
+                    fontSize: '13px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '2px',
+                    fontWeight: 700,
+                    color: 'var(--accent-cyan)',
+                    fontFamily: "'Orbitron', sans-serif"
+                  }}
+                >
+                  Implementation
                 </h2>
               </div>
               
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                id="design-upload"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onload = () => setDesignImage(reader.result as string);
-                    reader.readAsDataURL(file);
-                  }
-                }}
-              />
-              <label htmlFor="design-upload" className="upload-zone rounded-lg p-8 h-64 flex items-center justify-center cursor-pointer relative group block">
-                {designImage ? (
-                  <img src={designImage} alt="Design" className="max-h-full max-w-full object-contain rounded" />
-                ) : (
-                  <div className="text-center">
-                    <div className="text-6xl mb-4 text-[var(--accent-neon)]">↑</div>
-                    <p className="text-[var(--text-secondary)] text-sm">DROP OR CLICK</p>
-                  </div>
-                )}
-              </label>
-            </div>
-          </div>
-
-          {/* Implementation - Spans 7 columns */}
-          <div className="md:col-span-7 animate-slide-up delay-200">
-            <div className="card-terminal p-6 h-full glow-cyan">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-[var(--accent-cyan)] rounded-full animate-pulse"></div>
-                  <h2 className="text-sm uppercase tracking-widest" style={{ fontFamily: "'Orbitron', sans-serif", color: 'var(--accent-cyan)' }}>
-                    Implementation
-                  </h2>
-                </div>
-                
-                {/* Mode Toggle */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setImplementationMode("upload")}
-                    className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
-                      implementationMode === "upload"
-                        ? "bg-[var(--accent-cyan)] text-black font-bold"
-                        : "bg-transparent border border-[var(--border)] text-[var(--text-secondary)]"
-                    }`}
-                    style={{ fontFamily: "'Orbitron', sans-serif" }}
-                  >
-                    Upload
-                  </button>
-                  <button
-                    onClick={() => setImplementationMode("url")}
-                    className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
-                      implementationMode === "url"
-                        ? "bg-[var(--accent-cyan)] text-black font-bold"
-                        : "bg-transparent border border-[var(--border)] text-[var(--text-secondary)]"
-                    }`}
-                    style={{ fontFamily: "'Orbitron', sans-serif" }}
-                  >
-                    URL
-                  </button>
-                </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => setImplementationMode("upload")}
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '11px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1.5px',
+                    fontWeight: 700,
+                    borderRadius: '6px',
+                    border: implementationMode === "upload" ? 'none' : '2px solid var(--border)',
+                    backgroundColor: implementationMode === "upload" ? 'var(--accent-cyan)' : 'transparent',
+                    color: implementationMode === "upload" ? '#000' : 'var(--text-secondary)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontFamily: "'Orbitron', sans-serif"
+                  }}
+                >
+                  Upload
+                </button>
+                <button
+                  onClick={() => setImplementationMode("url")}
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '11px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1.5px',
+                    fontWeight: 700,
+                    borderRadius: '6px',
+                    border: implementationMode === "url" ? 'none' : '2px solid var(--border)',
+                    backgroundColor: implementationMode === "url" ? 'var(--accent-cyan)' : 'transparent',
+                    color: implementationMode === "url" ? '#000' : 'var(--text-secondary)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontFamily: "'Orbitron', sans-serif"
+                  }}
+                >
+                  URL
+                </button>
               </div>
-
-              {implementationMode === "upload" ? (
-                <>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    id="impl-upload"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onload = () => setImplementationImage(reader.result as string);
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                  />
-                  <label htmlFor="impl-upload" className="upload-zone rounded-lg p-8 h-64 flex items-center justify-center cursor-pointer block">
-                    {implementationImage ? (
-                      <img src={implementationImage} alt="Implementation" className="max-h-full max-w-full object-contain rounded" />
-                    ) : (
-                      <div className="text-center">
-                        <div className="text-6xl mb-4 text-[var(--accent-cyan)]">↑</div>
-                        <p className="text-[var(--text-secondary)] text-sm">DROP OR CLICK</p>
-                      </div>
-                    )}
-                  </label>
-                </>
-              ) : (
-                <div className="space-y-4">
-                  <input
-                    type="url"
-                    placeholder="https://example.com"
-                    value={implementationUrl}
-                    onChange={(e) => setImplementationUrl(e.target.value)}
-                    className="input-terminal w-full px-4 py-3 rounded text-sm"
-                  />
-                  <select 
-                    value={viewport}
-                    onChange={(e) => setViewport(e.target.value as keyof typeof VIEWPORT_PRESETS)}
-                    className="input-terminal w-full px-4 py-3 rounded text-sm"
-                  >
-                    {Object.entries(VIEWPORT_PRESETS).map(([key, preset]) => (
-                      <option key={key} value={key}>{preset.label}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
             </div>
+
+            {implementationMode === "upload" ? (
+              <>
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="impl-upload"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = () => setImplementationImage(reader.result as string);
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+                <label 
+                  htmlFor="impl-upload"
+                  className="upload-zone"
+                  style={{ 
+                    minHeight: '320px',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    padding: '24px'
+                  }}
+                >
+                  {implementationImage ? (
+                    <img 
+                      src={implementationImage} 
+                      alt="Implementation" 
+                      style={{ 
+                        maxWidth: '100%', 
+                        maxHeight: '280px', 
+                        objectFit: 'contain',
+                        borderRadius: '8px'
+                      }} 
+                    />
+                  ) : (
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '72px', marginBottom: '16px', color: 'var(--accent-cyan)' }}>↑</div>
+                      <p style={{ 
+                        fontSize: '13px', 
+                        textTransform: 'uppercase', 
+                        letterSpacing: '2px',
+                        color: 'var(--text-secondary)',
+                        fontWeight: 700
+                      }}>
+                        Drop or Click
+                      </p>
+                    </div>
+                  )}
+                </label>
+              </>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <input
+                  type="url"
+                  placeholder="https://example.com"
+                  value={implementationUrl}
+                  onChange={(e) => setImplementationUrl(e.target.value)}
+                  className="input-terminal"
+                  style={{
+                    width: '100%',
+                    minHeight: '48px',
+                    padding: '12px 16px',
+                    fontSize: '14px',
+                    borderRadius: '8px'
+                  }}
+                />
+                <select 
+                  value={viewport}
+                  onChange={(e) => setViewport(e.target.value as keyof typeof VIEWPORT_PRESETS)}
+                  className="input-terminal"
+                  style={{
+                    width: '100%',
+                    minHeight: '48px',
+                    padding: '12px 16px',
+                    fontSize: '14px',
+                    borderRadius: '8px'
+                  }}
+                >
+                  {Object.entries(VIEWPORT_PRESETS).map(([key, preset]) => (
+                    <option key={key} value={key}>{preset.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Metadata + Action Row */}
-        <div className="grid md:grid-cols-12 gap-6 mb-12">
-          <div className="md:col-span-9 space-y-4 animate-slide-up delay-300">
-            <div className="grid md:grid-cols-2 gap-4">
+        {/* Metadata + Button */}
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', alignItems: 'end' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <input
                 type="text"
                 placeholder="Screen name (optional)"
                 value={screenName}
                 onChange={(e) => setScreenName(e.target.value)}
-                className="input-terminal px-4 py-3 rounded text-sm"
+                className="input-terminal"
+                style={{
+                  width: '100%',
+                  minHeight: '48px',
+                  padding: '12px 16px',
+                  fontSize: '14px',
+                  borderRadius: '8px'
+                }}
               />
               <select 
                 value={platform}
                 onChange={(e) => setPlatform(e.target.value as "" | "web" | "mobile")}
-                className="input-terminal px-4 py-3 rounded text-sm"
+                className="input-terminal"
+                style={{
+                  width: '100%',
+                  minHeight: '48px',
+                  padding: '12px 16px',
+                  fontSize: '14px',
+                  borderRadius: '8px'
+                }}
               >
                 <option value="">Platform (optional)</option>
                 <option value="web">Web</option>
@@ -293,109 +491,194 @@ export default function Home() {
             </div>
 
             {error && (
-              <div className="border-l-4 border-red-500 bg-red-500/10 p-4 rounded">
-                <p className="text-red-400 text-sm" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              <div 
+                style={{ 
+                  borderLeft: '4px solid #ef4444',
+                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                  padding: '16px',
+                  borderRadius: '8px'
+                }}
+              >
+                <p style={{ 
+                  color: '#f87171', 
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  fontFamily: "'JetBrains Mono', monospace"
+                }}>
                   ⚠ {error}
                 </p>
               </div>
             )}
           </div>
 
-          <div className="md:col-span-3 flex items-end animate-slide-up delay-400">
-            <button 
-              onClick={handleCompare}
-              disabled={loading || !designImage}
-              className="btn-neon w-full py-4 rounded disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              {loading ? "ANALYZING..." : "COMPARE"}
-            </button>
-          </div>
+          <button 
+            onClick={handleCompare}
+            disabled={loading || !designImage}
+            className="btn-neon"
+            style={{
+              width: '100%',
+              minHeight: '56px',
+              padding: '16px 32px',
+              fontSize: '13px',
+              fontWeight: 700,
+              letterSpacing: '2px',
+              borderRadius: '8px',
+              fontFamily: "'Orbitron', sans-serif"
+            }}
+          >
+            {loading ? "ANALYZING..." : "COMPARE"}
+          </button>
         </div>
 
-        {/* Results Section */}
+        {/* Results */}
         {result && (
-          <div className="space-y-8 animate-fade-in">
-            {/* Preview Grid */}
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="card-terminal p-4">
-                <div className="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2">Design</div>
-                <img src={designImage!} alt="Design" className="w-full rounded border border-[var(--border)]" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', marginTop: '16px' }}>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+              <div className="card-terminal" style={{ padding: '20px', borderRadius: '12px' }}>
+                <div style={{ 
+                  fontSize: '11px', 
+                  textTransform: 'uppercase', 
+                  letterSpacing: '2px',
+                  color: 'var(--text-secondary)',
+                  marginBottom: '12px',
+                  fontWeight: 700
+                }}>Design</div>
+                <img src={designImage!} alt="Design" style={{ width: '100%', borderRadius: '8px', border: '1px solid var(--border)' }} />
               </div>
-              <div className="card-terminal p-4">
-                <div className="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2">Implementation</div>
-                <img src={implementationImage!} alt="Implementation" className="w-full rounded border border-[var(--border)]" />
+              
+              <div className="card-terminal" style={{ padding: '20px', borderRadius: '12px' }}>
+                <div style={{ 
+                  fontSize: '11px', 
+                  textTransform: 'uppercase', 
+                  letterSpacing: '2px',
+                  color: 'var(--text-secondary)',
+                  marginBottom: '12px',
+                  fontWeight: 700
+                }}>Implementation</div>
+                <img src={implementationImage!} alt="Implementation" style={{ width: '100%', borderRadius: '8px', border: '1px solid var(--border)' }} />
               </div>
-              <div className="card-terminal p-4 glow-neon">
-                <div className="text-xs uppercase tracking-wider text-[var(--accent-neon)] mb-2">Diff Analysis</div>
-                <img src={result.diffImageUrl} alt="Diff" className="w-full rounded border border-[var(--accent-neon)]" />
+              
+              <div className="card-terminal glow-neon" style={{ padding: '20px', borderRadius: '12px' }}>
+                <div style={{ 
+                  fontSize: '11px', 
+                  textTransform: 'uppercase', 
+                  letterSpacing: '2px',
+                  color: 'var(--accent-neon)',
+                  marginBottom: '12px',
+                  fontWeight: 700
+                }}>Diff Analysis</div>
+                <img src={result.diffImageUrl} alt="Diff" style={{ width: '100%', borderRadius: '8px', border: '2px solid var(--accent-neon)' }} />
               </div>
             </div>
 
-            {/* Mismatches */}
             {result.mismatches.length > 0 ? (
-              <div className="card-terminal p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl font-bold" style={{ fontFamily: "'Orbitron', sans-serif" }}>
-                    <span className="text-[var(--accent-neon)]">{result.mismatches.length}</span> MISMATCHES
+              <div className="card-terminal" style={{ padding: '32px', borderRadius: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', gap: '24px', flexWrap: 'wrap' }}>
+                  <h3 style={{ fontSize: '28px', fontWeight: 900, fontFamily: "'Orbitron', sans-serif" }}>
+                    <span style={{ color: 'var(--accent-neon)' }}>{result.mismatches.length}</span> MISMATCHES
                   </h3>
-                  <div className="flex gap-3">
+                  
+                  <div style={{ display: 'flex', gap: '12px' }}>
                     <button
                       onClick={handleCopyMarkdown}
                       disabled={selectedMismatches.length === 0}
-                      className="px-6 py-2 bg-[var(--accent-neon)] text-black text-xs uppercase tracking-wider font-bold rounded disabled:opacity-30 hover:bg-[var(--accent-cyan)] transition-all"
-                      style={{ fontFamily: "'Orbitron', sans-serif" }}
+                      style={{
+                        padding: '12px 24px',
+                        backgroundColor: 'var(--accent-neon)',
+                        color: '#000',
+                        fontSize: '11px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '2px',
+                        fontWeight: 700,
+                        borderRadius: '8px',
+                        border: 'none',
+                        cursor: selectedMismatches.length === 0 ? 'not-allowed' : 'pointer',
+                        opacity: selectedMismatches.length === 0 ? 0.3 : 1,
+                        fontFamily: "'Orbitron', sans-serif"
+                      }}
                     >
                       COPY MD ({selectedMismatches.length})
                     </button>
                     <button
                       onClick={handleDownloadJSON}
-                      className="px-6 py-2 border border-[var(--accent-cyan)] text-[var(--accent-cyan)] text-xs uppercase tracking-wider font-bold rounded hover:bg-[var(--accent-cyan)] hover:text-black transition-all"
-                      style={{ fontFamily: "'Orbitron', sans-serif" }}
+                      style={{
+                        padding: '12px 24px',
+                        border: '2px solid var(--accent-cyan)',
+                        backgroundColor: 'transparent',
+                        color: 'var(--accent-cyan)',
+                        fontSize: '11px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '2px',
+                        fontWeight: 700,
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontFamily: "'Orbitron', sans-serif"
+                      }}
                     >
                       JSON ↓
                     </button>
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  {result.mismatches.map((mismatch, idx) => (
-                    <div
-                      key={mismatch.id}
-                      className="border border-[var(--border)] rounded p-4 hover:border-[var(--accent-neon)] transition-all group"
-                      style={{ animationDelay: `${idx * 0.05}s` }}
-                    >
-                      <div className="flex gap-4">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {result.mismatches.map((mismatch) => (
+                    <div key={mismatch.id} style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '20px' }}>
+                      <div style={{ display: 'flex', gap: '16px' }}>
                         <input
                           type="checkbox"
                           checked={selectedMismatches.includes(mismatch.id)}
                           onChange={() => toggleMismatch(mismatch.id)}
-                          className="w-5 h-5 accent-[var(--accent-neon)]"
+                          style={{ width: '20px', height: '20px', marginTop: '2px', accentColor: 'var(--accent-neon)', cursor: 'pointer' }}
                         />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <span className={`px-3 py-1 text-xs uppercase tracking-wider font-bold ${
-                              mismatch.priority === "high"
-                                ? "bg-red-500/20 text-red-400 border border-red-500/50"
-                                : mismatch.priority === "medium"
-                                ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/50"
-                                : "bg-blue-500/20 text-blue-400 border border-blue-500/50"
-                            }`}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                            <span style={{
+                              padding: '4px 12px',
+                              fontSize: '11px',
+                              textTransform: 'uppercase',
+                              letterSpacing: '1.5px',
+                              fontWeight: 700,
+                              borderRadius: '6px',
+                              ...(mismatch.priority === "high" ? {
+                                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                                color: '#f87171',
+                                border: '1px solid rgba(239, 68, 68, 0.5)'
+                              } : mismatch.priority === "medium" ? {
+                                backgroundColor: 'rgba(251, 191, 36, 0.2)',
+                                color: '#fbbf24',
+                                border: '1px solid rgba(251, 191, 36, 0.5)'
+                              } : {
+                                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                                color: '#60a5fa',
+                                border: '1px solid rgba(59, 130, 246, 0.5)'
+                              })
+                            }}>
                               {mismatch.priority}
                             </span>
-                            <span className="px-3 py-1 text-xs uppercase tracking-wider bg-[var(--accent-neon)]/10 text-[var(--accent-neon)] border border-[var(--accent-neon)]/30">
+                            <span style={{
+                              padding: '4px 12px',
+                              fontSize: '11px',
+                              textTransform: 'uppercase',
+                              letterSpacing: '1.5px',
+                              backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                              color: 'var(--accent-neon)',
+                              border: '1px solid rgba(0, 255, 136, 0.3)',
+                              borderRadius: '6px'
+                            }}>
                               {mismatch.category}
                             </span>
-                            <h4 className="font-bold text-sm" style={{ fontFamily: "'Orbitron', sans-serif" }}>
+                            <h4 style={{ fontWeight: 700, fontSize: '15px', fontFamily: "'Orbitron', sans-serif" }}>
                               {mismatch.title}
                             </h4>
                           </div>
-                          <p className="text-sm text-[var(--text-secondary)] mb-2">
+                          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '12px', lineHeight: '1.6' }}>
                             {mismatch.explanation}
                           </p>
-                          <div className="text-xs text-[var(--text-secondary)]">
-                            <strong className="text-[var(--accent-cyan)]">Fix:</strong> {mismatch.suggestedFix}
+                          <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                            <strong style={{ color: 'var(--accent-cyan)' }}>Fix:</strong> {mismatch.suggestedFix}
                           </div>
-                          <div className="text-xs text-[var(--text-secondary)] mt-2 opacity-50" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', opacity: 0.5, fontFamily: "'JetBrains Mono', monospace" }}>
                             [{mismatch.bbox.x}, {mismatch.bbox.y}] {mismatch.bbox.width}×{mismatch.bbox.height}px
                           </div>
                         </div>
@@ -405,12 +688,12 @@ export default function Home() {
                 </div>
               </div>
             ) : (
-              <div className="card-terminal p-12 text-center glow-neon">
-                <div className="text-6xl mb-4">✓</div>
-                <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Orbitron', sans-serif", color: 'var(--accent-neon)' }}>
+              <div className="card-terminal glow-neon" style={{ padding: '64px 32px', textAlign: 'center', borderRadius: '16px' }}>
+                <div style={{ fontSize: '72px', marginBottom: '24px' }}>✓</div>
+                <h3 style={{ fontSize: '28px', fontWeight: 900, marginBottom: '12px', fontFamily: "'Orbitron', sans-serif", color: 'var(--accent-neon)' }}>
                   PERFECT MATCH
                 </h3>
-                <p className="text-[var(--text-secondary)]">No significant differences detected</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>No significant differences detected</p>
               </div>
             )}
           </div>
