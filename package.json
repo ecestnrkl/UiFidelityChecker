@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "tsx __tests__/diffPipeline.test.ts"
+    "test": "tsx __tests__/diffPipeline.test.ts && tsx __tests__/ticketTemplates.test.ts"
   },
   "repository": {
     "type": "git",

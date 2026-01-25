@@ -12,6 +12,13 @@ A screenshot-based visual regression tool that compares design mockups with impl
 - **Smart Categorization**: Automatically categorizes mismatches into Color, Typography, Spacing, or Component State
 - **Priority Ranking**: Assigns High/Medium/Low priority based on area and visibility
 - **Interactive Selection**: Check/uncheck mismatches to include in report
+- **One-Click Ticket Creation**: Generate ready-to-use tickets in multiple formats:
+  - Generic Markdown
+  - GitHub Issue Markdown (with direct issue creation link)
+  - Jira-style text
+  - JSON export with schema validation
+- **Flexible Ticket Granularity**: Create single bundled ticket or one ticket per mismatch
+- **Customizable Metadata**: Add project name, environment, assignee, labels, and severity mappings
 - **Markdown Ticket Export**: Copy-paste ready tickets for issue tracking with visual feedback
 - **JSON Report Export**: Downloadable structured reports with all mismatch data
 - **Modern UI**: Black background with neon green/cyan accents, Orbitron font, and dramatic visual effects
@@ -80,6 +87,36 @@ npm test
 4. **Select Viewport**: Choose Desktop (1440x900) or Mobile (390x844)
 5. **Click Compare**: Screenshot will be captured automatically via Playwright
 6. **Review & Export**: Same as Option 1
+
+---
+
+## 🎫 Ticket Creation
+
+After running a comparison, use the **CREATE TICKETS** section to generate ready-to-use tickets:
+
+### 1. Select Format
+- **Generic Markdown** - Universal format for any issue tracker
+- **GitHub Issue Markdown** - Optimized for GitHub with tables and checkboxes
+- **Jira Text** - Plain text compatible with Jira
+- **JSON** - Structured export with JSON Schema validation
+
+### 2. Choose Granularity
+- **Single Bundled Ticket** - All selected findings in one ticket
+- **One Ticket Per Mismatch** - Separate tickets for each finding
+
+### 3. Add Metadata (Optional)
+- Project/Repo Name
+- Environment (local/staging/production)
+- Assignee username
+- Labels/Tags (comma-separated)
+- Severity Mapping (priority → severity conversion)
+
+### 4. Actions
+- **COPY TICKET(S)** - Copy to clipboard (multiple tickets concatenated)
+- **DOWNLOAD FILE(S)** - Save as .md, .txt, or .json files
+- **OPEN IN GITHUB** - (GitHub format only) Opens pre-filled issue creation page
+
+**Tip**: If no mismatches are selected, the tool automatically includes the top 3 by priority.
 
 ---
 

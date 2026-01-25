@@ -58,3 +58,61 @@ export interface MarkdownReport {
 export interface JSONReport extends ComparisonResult {
   version: string;
 }
+
+// Ticket creation types
+export type TicketFormat = "generic-markdown" | "github-markdown" | "jira-text" | "json";
+export type TicketGranularity = "single-bundled" | "one-per-mismatch";
+export type Severity = "critical" | "major" | "minor" | "trivial";
+export type Environment = "local" | "staging" | "production";
+
+export interface TicketConfig {
+  format: TicketFormat;
+  granularity: TicketGranularity;
+  projectName?: string;
+  screenName?: string;
+  platform?: "web" | "mobile";
+  environment?: Environment;
+  assignee?: string;
+  labels?: string[]; // comma-separated tags
+  severityMapping?: {
+    high: Severity;
+    medium: Severity;
+    low: Severity;
+  };
+}
+
+export interface TicketData {
+  title: string;
+  content: string;
+  filename: string;
+  mimeType: string;
+}
+
+export interface TicketMetadata {
+  screenName?: string;
+  platform?: string;
+  viewport?: string;
+  timestamp: string;
+  similarityMetric: number;
+  environment?: string;
+  projectName?: string;
+  assignee?: string;
+  labels?: string[];
+}
+
+export interface TicketFinding {
+  id: string;
+  title: string;
+  category: MismatchCategory;
+  priority: Priority;
+  severity: Severity;
+  explanation: string;
+  suggestedFix: string;
+  bbox: BoundingBox;
+}
+
+export interface StructuredTicket {
+  metadata: TicketMetadata;
+  findings: TicketFinding[];
+  diffImageReference?: string;
+}

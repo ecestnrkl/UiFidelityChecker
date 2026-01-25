@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { ComparisonResult, VIEWPORT_PRESETS } from "@/lib/types";
 import { generateMarkdownReport, generateJSONReport } from "@/lib/reportGenerator";
+import TicketBuilder from "./components/TicketBuilder";
 
 export default function Home() {
   const [designImage, setDesignImage] = useState<string | null>(null);
@@ -112,6 +113,20 @@ export default function Home() {
     );
   }, []);
 
+  const handleReset = useCallback(() => {
+    setDesignImage(null);
+    setImplementationImage(null);
+    setImplementationMode("upload");
+    setImplementationUrl("");
+    setViewport("desktop");
+    setScreenName("");
+    setPlatform("");
+    setLoading(false);
+    setError(null);
+    setResult(null);
+    setSelectedMismatches([]);
+  }, []);
+
   return (
     <main 
       className="min-h-screen w-full"
@@ -133,14 +148,50 @@ export default function Home() {
         {/* Hero + Score */}
         <div style={{ display: 'flex', gap: '32px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
           <div style={{ flex: '1 1 500px' }}>
-            <h1 
-              className="text-6xl lg:text-7xl font-black mb-6 leading-tight"
-              style={{ fontFamily: "'Orbitron', sans-serif" }}
-            >
-              <span className="glow-text" style={{ color: 'var(--accent-neon)' }}>UI</span>
-              <br />
-              <span className="text-white">FIDELITY</span>
-            </h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+              <h1 
+                className="text-6xl lg:text-7xl font-black leading-tight"
+                style={{ fontFamily: "'Orbitron', sans-serif", flex: 1 }}
+              >
+                <span className="glow-text" style={{ color: 'var(--accent-neon)' }}>UI</span>
+                <br />
+                <span className="text-white">FIDELITY</span>
+              </h1>
+              
+              {result && (
+                <button
+                  onClick={handleReset}
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    backgroundColor: 'transparent',
+                    border: '2px solid var(--accent-cyan)',
+                    borderRadius: '50%',
+                    color: 'var(--accent-cyan)',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--accent-cyan)';
+                    e.currentTarget.style.color = '#000';
+                    e.currentTarget.style.transform = 'rotate(180deg)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = 'var(--accent-cyan)';
+                    e.currentTarget.style.transform = 'rotate(0deg)';
+                  }}
+                  title="Reset and start new comparison"
+                  aria-label="Reset comparison"
+                >
+                  ↻
+                </button>
+              )}
+            </div>
             <div 
               style={{ 
                 height: '6px', 
@@ -714,6 +765,12 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
+
+                {/* Ticket Builder */}
+                <TicketBuilder
+                  result={result}
+                  selectedMismatches={selectedMismatches}
+                />
               </div>
             ) : (
               <div className="card-terminal glow-neon" style={{ padding: '64px 32px', textAlign: 'center', borderRadius: '16px' }}>
@@ -724,6 +781,38 @@ export default function Home() {
                 <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>No significant differences detected</p>
               </div>
             )}
+
+            {/* Reset Button */}
+            <div style={{ marginTop: '48px', textAlign: 'center' }}>
+              <button
+                onClick={handleReset}
+                style={{
+                  padding: '16px 48px',
+                  backgroundColor: 'transparent',
+                  border: '2px solid var(--accent-neon)',
+                  color: 'var(--accent-neon)',
+                  fontSize: '13px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '2px',
+                  fontWeight: 700,
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontFamily: "'Orbitron', sans-serif",
+                  transition: 'all 0.3s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--accent-neon)';
+                  e.currentTarget.style.color = '#000';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = 'var(--accent-neon)';
+                }}
+                aria-label="Reset and start new comparison"
+              >
+                ↻ NEW COMPARISON
+              </button>
+            </div>
           </div>
         )}
       </div>
