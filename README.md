@@ -8,6 +8,9 @@ A screenshot-based visual regression tool that compares design mockups with impl
 
 - **Visual Comparison**: Upload design mockups and implementation screenshots for pixel-perfect comparison
 - **URL Screenshot Capture**: Enter a URL and capture screenshots with Desktop or Mobile viewport presets  
+- **Viewport & Size Normalization**: Automatic size matching with 3 intelligent sizing modes to eliminate false positives from viewport mismatches
+- **Design-Size Screenshot Capture**: URL screenshots automatically use design dimensions for accurate comparisons
+- **Viewport Mismatch Detection**: Pre-check warnings guide you when dimension mismatches are detected
 - **Automated Diff Generation**: Highlights visual differences with red overlay using Pixelmatch algorithm
 - **Smart Categorization**: Automatically categorizes mismatches into Color, Typography, Spacing, or Component State
 - **Priority Ranking**: Assigns High/Medium/Low priority based on area and visibility
@@ -21,6 +24,7 @@ A screenshot-based visual regression tool that compares design mockups with impl
 - **Customizable Metadata**: Add project name, environment, assignee, labels, and severity mappings
 - **Markdown Ticket Export**: Copy-paste ready tickets for issue tracking with visual feedback
 - **JSON Report Export**: Downloadable structured reports with all mismatch data
+- **Transparent Results**: See original dimensions, normalization applied, and screenshot viewport used
 - **Modern UI**: Black background with neon green/cyan accents, Orbitron font, and dramatic visual effects
 - **Performance Optimized**: React hooks (useMemo, useCallback) for optimal rendering
 
@@ -74,19 +78,77 @@ npm test
 
 1. **Upload Design Mockup**: Click the design upload area and select your mockup image (PNG/JPG)
 2. **Upload Implementation**: Select "Upload" tab and upload your implementation screenshot
-3. **Add Metadata** (Optional): Enter screen name and platform
-4. **Click Compare**: Wait for processing (usually 5-10 seconds)
-5. **Review Results**: See similarity score, diff image and mismatch list
-6. **Export**: Select mismatches and copy as Markdown ticket or download JSON
+3. **Choose Sizing Mode**: Select how to handle dimension mismatches (default: Match width, crop)
+4. **Add Metadata** (Optional): Enter screen name and platform
+5. **Click Compare**: Wait for processing (usually 5-10 seconds)
+6. **Review Results**: See similarity score, diff image, normalization info, and mismatch list
+7. **Export**: Select mismatches and copy as Markdown ticket or download JSON
 
-### Option 2: Use URL Capture
+### Option 2: Use URL Capture (Recommended)
 
-1. **Upload Design Mockup**: Upload your design image
+1. **Upload Design Mockup**: Upload your design image (automatically extracts dimensions)
 2. **Select "URL" Tab**: Switch to URL mode in Implementation section
 3. **Enter URL**: Type the implementation URL (e.g., `https://example.com`)
-4. **Select Viewport**: Choose Desktop (1440x900) or Mobile (390x844)
-5. **Click Compare**: Screenshot will be captured automatically via Playwright
-6. **Review & Export**: Same as Option 1
+4. **Use Design Viewport** (Default ON): Screenshot will be captured at design dimensions for accurate comparison
+   - Turn OFF to use preset viewports (Desktop/Mobile)
+5. **Choose Sizing Mode**: Select normalization strategy
+6. **Click Compare**: Screenshot captured and normalized automatically
+7. **Check Warnings**: If viewport mismatch detected, review suggestion banner
+8. **Review & Export**: Same as Option 1
+
+---
+
+## 📐 Viewport & Size Normalization
+
+### Why Normalization Matters
+
+When comparing a design mockup (e.g., 1920x1080) with a URL screenshot (e.g., 1440x900), dimension differences cause false positives. The tool now automatically normalizes both images to the same dimensions before comparison.
+
+### Sizing Modes
+
+Choose how to handle dimension mismatches:
+
+1. **Match Width, Crop** (Default)
+   - Resizes implementation to match design width
+   - Crops excess height from center (or extends with black if shorter)
+   - **Use when**: Design and implementation have similar aspect ratios
+   - **Best for**: Desktop layouts, hero sections
+
+2. **Match Width, Letterbox**
+   - Resizes implementation to match design width
+   - Adds black bars (letterbox) top/bottom to reach design height
+   - **Use when**: You want to see the full implementation without cropping
+   - **Best for**: Mobile layouts, scrollable pages
+
+3. **Fit Inside**
+   - Scales implementation to fit entirely within design canvas
+   - Pads remaining space with black background
+   - **Use when**: Aspect ratios differ significantly
+   - **Best for**: Cross-platform comparisons (desktop design vs mobile screenshot)
+
+### Viewport Mismatch Warnings
+
+The tool detects likely viewport mismatches by comparing:
+- **Width ratio**: Flags if implementation width differs by >5% from design
+- **Aspect ratio delta**: Flags if aspect ratios differ by >0.1
+
+**Warning Example**:
+```
+⚠️ Viewport Mismatch Detected
+Viewport mismatch detected. Enable 'Use design size as viewport' to capture 
+screenshot at design dimensions. Aspect ratios differ significantly - 
+consider 'Fit inside' mode.
+
+Width ratio: 0.75x | Aspect delta: 0.15
+```
+
+### Normalization Metadata
+
+After comparison, see exactly what happened:
+- **Design Size**: Original design dimensions (e.g., 1920x1080)
+- **Implementation Size**: Original screenshot dimensions (e.g., 1440x900)
+- **Sizing Mode**: Normalization strategy applied
+- **Screenshot Viewport**: Viewport used for URL capture
 
 ---
 
@@ -137,23 +199,33 @@ After running a comparison, use the **CREATE TICKETS** section to generate ready
 UiFidelityChecker/
 ├── app/
 │   ├── api/
-│   │   ├── compare/route.ts      # Main comparison endpoint
-│   │   └── screenshot/route.ts   # URL screenshot capture
-│   ├── page.tsx                  # Main UI component
-│   ├── layout.tsx                # Root layout
-│   └── globals.css               # Precision Studio styles
+│   │   ├── compare/route.ts           # Main comparison endpoint with normalization
+│   │   ├── screenshot/route.ts        # URL screenshot capture with custom viewports
+│   │   └── extract-dimensions/route.ts # Design dimension extraction
+│   ├── components/
+│   │   └── TicketBuilder.tsx          # Ticket creation UI
+│   ├── page.tsx                       # Main UI component with viewport controls
+│   ├── layout.tsx                     # Root layout
+│   ├── globals.css                    # Precision Studio styles
+│   └── icon.svg                       # Precision targeting favicon
 ├── lib/
-│   ├── types.ts                  # TypeScript definitions
-│   ├── imageProcessor.ts         # Sharp normalization
-│   ├── diffGenerator.ts          # Pixelmatch diff
-│   ├── regionExtractor.ts        # Mismatch region detection
-│   ├── categorizer.ts            # Smart categorization
-│   └── reportGenerator.ts        # MD/JSON exports
+│   ├── types.ts                       # TypeScript definitions
+│   ├── imageProcessor.ts              # Sharp normalization (legacy)
+│   ├── sizeNormalizer.ts             # NEW: Intelligent size normalization engine
+│   ├── dimensionExtractor.ts         # NEW: Image dimension extraction
+│   ├── viewportChecker.ts            # NEW: Viewport mismatch detection
+│   ├── diffGenerator.ts               # Pixelmatch diff
+│   ├── regionExtractor.ts             # Mismatch region detection
+│   ├── categorizer.ts                 # Smart categorization
+│   ├── reportGenerator.ts             # MD/JSON exports
+│   └── ticketTemplates.ts             # Ticket generation
 ├── __tests__/
-│   └── diffPipeline.test.ts      # Test suite
-├── public/                       # Static assets
-├── package.json                  # Dependencies
-└── README.md                     # This file
+│   ├── diffPipeline.test.ts          # Diff pipeline tests
+│   ├── sizeNormalizer.test.ts        # NEW: Normalization tests (10 tests)
+│   └── ticketTemplates.test.ts       # Ticket generation tests
+├── public/                            # Static assets
+├── package.json                       # Dependencies
+└── README.md                          # This file
 ```
 
 ---
@@ -278,14 +350,56 @@ The tool uses heuristics to categorize mismatches:
 
 ## Troubleshooting
 
+### Viewport & Dimension Issues
+
+#### "Viewport mismatch detected" warning appears
+**Cause**: Design and implementation have different dimensions or aspect ratios.
+
+**Solutions**:
+1. **Enable "Use design size as viewport"** (default ON for URL mode)
+   - Captures screenshot at exact design dimensions
+   - Eliminates most viewport mismatches
+2. **Try a different sizing mode**:
+   - Use "Fit inside" for cross-platform comparisons (desktop → mobile)
+   - Use "Match width, letterbox" to see full page without cropping
+3. **Upload matching screenshots**:
+   - Ensure both images are from the same viewport/device
+
+#### Many false positives in results
+**Cause**: Dimension mismatch causing layout shifts.
+
+**Solutions**:
+1. Use "Use design size as viewport" for URL screenshots
+2. Switch sizing mode to "Fit inside" if aspect ratios differ significantly
+3. Verify design dimensions are extracted correctly (shown in normalization details)
+
+#### Design dimensions not detected
+**Cause**: Image upload failed or dimensions couldn't be extracted.
+
+**Solution**:
+- Re-upload the design image
+- Check console for errors
+- Ensure image is valid PNG/JPG format
+
+#### Screenshot doesn't match design at all
+**Cause**: Website is responsive and looks different at design dimensions.
+
+**Solutions**:
+1. Check normalization details to see what viewport was used
+2. Turn OFF "Use design size as viewport" and try preset (Desktop/Mobile)
+3. Verify the URL loads the correct page
+4. Check if website requires authentication (not supported)
+
+### General Issues
+
 ### "URL not reachable"
 - Ensure the URL is publicly accessible
 - Check if the website blocks headless browsers
 - Try with a different URL
 
 ### "Images are too large"
-- Resize images to max 4000px width before uploading
-- Use smaller viewport presets
+- Tool automatically caps to 3000px max dimension
+- For very large images (>4000px), downscale before upload for faster processing
 
 ### "Screenshot timeout"
 - Website took too long to load (>25 seconds)

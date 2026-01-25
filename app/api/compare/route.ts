@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { base64ToBuffer, bufferToBase64, normalizeImages } from "@/lib/imageProcessor";
+import { base64ToBuffer, bufferToBase64 } from "@/lib/imageProcessor";
 import { generateDiff } from "@/lib/diffGenerator";
 import { extractMismatchRegions } from "@/lib/regionExtractor";
 import {
@@ -10,13 +10,24 @@ import {
   generateSuggestedFix,
 } from "@/lib/categorizer";
 import { ComparisonResult, Mismatch } from "@/lib/types";
+import { getDimensionsFromBuffer } from "@/lib/dimensionExtractor";
+import { normalizeBySizingMode } from "@/lib/sizeNormalizer";
+import { detectViewportMismatch, checkDimensionLimits } from "@/lib/viewportChecker";
 
 export const maxDuration = 60; // 60 second timeout for processing
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { designImage, implementationImage, screenName, platform } = body;
+    const { 
+      designImage, 
+      implementationImage, 
+      screenName, 
+      platform,
+      sizingMode = "match-width-crop",
+      designDimensions: providedDesignDims,
+      screenshotViewport,
+    } = body;
 
     if (!designImage || !implementationImage) {
       return NextResponse.json(
@@ -31,18 +42,56 @@ export async function POST(request: NextRequest) {
     const designBuffer = base64ToBuffer(designImage);
     const implBuffer = base64ToBuffer(implementationImage);
 
-    // Step 2: Normalize images
-    const { buffer1, buffer2, width, height } = await normalizeImages(
-      designBuffer,
-      implBuffer
+    // Step 2: Extract original dimensions
+    const designDims = await getDimensionsFromBuffer(designBuffer);
+    const implDims = await getDimensionsFromBuffer(implBuffer);
+    
+    console.log(`📏 Design: ${designDims.width}x${designDims.height}, Implementation: ${implDims.width}x${implDims.height}`);
+
+    // Step 3: Check for dimension limits
+    const designLimitCheck = checkDimensionLimits(designDims);
+    if (designLimitCheck.needsCapping) {
+      console.log(`⚠️  ${designLimitCheck.suggestion}`);
+    }
+
+    // Use provided or detected design dimensions as target
+    const targetDimensions = designLimitCheck.needsCapping 
+      ? designLimitCheck.cappedDimensions! 
+      : designDims;
+
+    // Step 4: Detect viewport mismatch
+    const viewportWarning = detectViewportMismatch(
+      targetDimensions,
+      implDims,
+      !!screenshotViewport,
+      false // useDesignViewport flag (we'll determine from viewport match)
     );
 
-    // Step 3: Generate diff
+    if (viewportWarning.detected) {
+      console.log(`⚠️  Viewport mismatch: width ratio ${viewportWarning.widthRatio}, aspect delta ${viewportWarning.aspectRatioDelta}`);
+    }
+
+    // Step 5: Normalize both images using sizing mode
+    const designNormalized = await normalizeBySizingMode(
+      designBuffer,
+      targetDimensions,
+      sizingMode
+    );
+
+    const implNormalized = await normalizeBySizingMode(
+      implBuffer,
+      targetDimensions,
+      sizingMode
+    );
+
+    console.log(`📐 Normalized to ${targetDimensions.width}x${targetDimensions.height} using ${sizingMode}`);
+
+    // Step 6: Generate diff
     const { diffBuffer, similarity, diffData, diffPixels } = await generateDiff(
-      buffer1,
-      buffer2,
-      width,
-      height
+      designNormalized.buffer,
+      implNormalized.buffer,
+      targetDimensions.width,
+      targetDimensions.height
     );
 
     // Handle case when images are identical or very similar
@@ -56,14 +105,22 @@ export async function POST(request: NextRequest) {
           screenName,
           platform,
           comparedAt: new Date().toISOString(),
+          designDimensions: designDims,
+          implementationDimensions: implDims,
+          normalizationApplied: {
+            sizingMode,
+            targetDimensions,
+          },
+          screenshotViewport,
         },
+        viewportWarning: viewportWarning.detected ? viewportWarning : undefined,
       } as ComparisonResult);
     }
 
-    // Step 4: Extract mismatch regions
-    const regions = extractMismatchRegions(diffData, width, height, 10);
+    // Step 7: Extract mismatch regions
+    const regions = extractMismatchRegions(diffData, targetDimensions.width, targetDimensions.height, 10);
 
-    // Step 5: Categorize and build mismatch objects
+    // Step 8: Categorize and build mismatch objects
     const mismatches: Mismatch[] = regions.map((region, idx) => {
       const aspectRatio = region.bbox.width / region.bbox.height;
       const area = region.bbox.width * region.bbox.height;
@@ -103,7 +160,15 @@ export async function POST(request: NextRequest) {
         screenName,
         platform,
         comparedAt: new Date().toISOString(),
+        designDimensions: designDims,
+        implementationDimensions: implDims,
+        normalizationApplied: {
+          sizingMode,
+          targetDimensions,
+        },
+        screenshotViewport,
       },
+      viewportWarning: viewportWarning.detected ? viewportWarning : undefined,
     };
 
     return NextResponse.json(result);

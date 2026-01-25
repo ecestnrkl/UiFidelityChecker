@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
-import { ComparisonResult, VIEWPORT_PRESETS } from "@/lib/types";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { ComparisonResult, VIEWPORT_PRESETS, SizingMode, ImageDimensions } from "@/lib/types";
 import { generateMarkdownReport, generateJSONReport } from "@/lib/reportGenerator";
 import TicketBuilder from "./components/TicketBuilder";
 
@@ -14,10 +14,40 @@ export default function Home() {
   const [screenName, setScreenName] = useState("");
   const [platform, setPlatform] = useState<"" | "web" | "mobile">("");
   
+  // New viewport normalization state
+  const [designDimensions, setDesignDimensions] = useState<ImageDimensions | null>(null);
+  const [useDesignViewport, setUseDesignViewport] = useState(true);
+  const [sizingMode, setSizingMode] = useState<SizingMode>("match-width-crop");
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ComparisonResult | null>(null);
   const [selectedMismatches, setSelectedMismatches] = useState<string[]>([]);
+
+  // Extract design dimensions when design image is uploaded
+  useEffect(() => {
+    if (designImage) {
+      const extractDimensions = async () => {
+        try {
+          const response = await fetch("/api/extract-dimensions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image: designImage }),
+          });
+          
+          if (response.ok) {
+            const dims = await response.json();
+            setDesignDimensions(dims);
+          }
+        } catch (err) {
+          console.error("Failed to extract design dimensions:", err);
+        }
+      };
+      extractDimensions();
+    } else {
+      setDesignDimensions(null);
+    }
+  }, [designImage]);
 
   const handleCompare = async () => {
     setError(null);
@@ -32,10 +62,22 @@ export default function Home() {
           throw new Error("Please enter a URL");
         }
 
+        const screenshotPayload: any = {
+          url: implementationUrl,
+        };
+
+        // Use design dimensions if available and toggle is ON
+        if (useDesignViewport && designDimensions) {
+          screenshotPayload.customWidth = designDimensions.width;
+          screenshotPayload.customHeight = designDimensions.height;
+        } else {
+          screenshotPayload.viewport = viewport;
+        }
+
         const screenshotRes = await fetch("/api/screenshot", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: implementationUrl, viewport }),
+          body: JSON.stringify(screenshotPayload),
         });
 
         if (!screenshotRes.ok) {
@@ -60,6 +102,11 @@ export default function Home() {
           implementationImage: implImage,
           screenName: screenName || undefined,
           platform: platform || undefined,
+          sizingMode,
+          designDimensions,
+          screenshotViewport: (useDesignViewport && designDimensions) 
+            ? { width: designDimensions.width, height: designDimensions.height, label: "Design Size" }
+            : undefined,
         }),
       });
 
@@ -121,6 +168,9 @@ export default function Home() {
     setViewport("desktop");
     setScreenName("");
     setPlatform("");
+    setDesignDimensions(null);
+    setUseDesignViewport(true);
+    setSizingMode("match-width-crop");
     setLoading(false);
     setError(null);
     setResult(null);
@@ -495,22 +545,39 @@ export default function Home() {
                     borderRadius: '8px'
                   }}
                 />
-                <select 
-                  value={viewport}
-                  onChange={(e) => setViewport(e.target.value as keyof typeof VIEWPORT_PRESETS)}
-                  className="input-terminal"
-                  style={{
-                    width: '100%',
-                    minHeight: '48px',
-                    padding: '12px 16px',
-                    fontSize: '14px',
-                    borderRadius: '8px'
-                  }}
-                >
-                  {Object.entries(VIEWPORT_PRESETS).map(([key, preset]) => (
-                    <option key={key} value={key}>{preset.label}</option>
-                  ))}
-                </select>
+                
+                {/* Viewport Toggle */}
+                <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={useDesignViewport}
+                    onChange={(e) => setUseDesignViewport(e.target.checked)}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                  />
+                  <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                    Use design size as viewport {designDimensions && `(${designDimensions.width}x${designDimensions.height})`}
+                  </span>
+                </label>
+                
+                {/* Viewport Preset (only shown if not using design viewport) */}
+                {!useDesignViewport && (
+                  <select 
+                    value={viewport}
+                    onChange={(e) => setViewport(e.target.value as keyof typeof VIEWPORT_PRESETS)}
+                    className="input-terminal"
+                    style={{
+                      width: '100%',
+                      minHeight: '48px',
+                      padding: '12px 16px',
+                      fontSize: '14px',
+                      borderRadius: '8px'
+                    }}
+                  >
+                    {Object.entries(VIEWPORT_PRESETS).map(([key, preset]) => (
+                      <option key={key} value={key}>{preset.label}</option>
+                    ))}
+                  </select>
+                )}
               </div>
             )}
           </div>
@@ -519,7 +586,7 @@ export default function Home() {
         {/* Metadata + Button */}
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', alignItems: 'end' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
               <input
                 type="text"
                 placeholder="Screen name (optional)"
@@ -549,6 +616,23 @@ export default function Home() {
                 <option value="">Platform (optional)</option>
                 <option value="web">Web</option>
                 <option value="mobile">Mobile</option>
+              </select>
+              <select 
+                value={sizingMode}
+                onChange={(e) => setSizingMode(e.target.value as SizingMode)}
+                className="input-terminal"
+                style={{
+                  width: '100%',
+                  minHeight: '48px',
+                  padding: '12px 16px',
+                  fontSize: '14px',
+                  borderRadius: '8px'
+                }}
+                title="How to handle dimension mismatches"
+              >
+                <option value="match-width-crop">Match width, crop</option>
+                <option value="match-width-letterbox">Match width, letterbox</option>
+                <option value="fit-inside">Fit inside</option>
               </select>
             </div>
 
@@ -612,6 +696,93 @@ export default function Home() {
         {/* Results */}
         {result && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', marginTop: '16px' }}>
+            
+            {/* Viewport Warning Banner */}
+            {result.viewportWarning?.detected && (
+              <div 
+                style={{ 
+                  borderLeft: '4px solid #f59e0b',
+                  backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                  padding: '20px',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '24px' }}>⚠️</span>
+                  <span style={{ 
+                    color: '#fbbf24', 
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px'
+                  }}>
+                    Viewport Mismatch Detected
+                  </span>
+                </div>
+                <p style={{ 
+                  color: '#fcd34d', 
+                  fontSize: '14px',
+                  lineHeight: '1.6'
+                }}>
+                  {result.viewportWarning.suggestion}
+                </p>
+                {result.viewportWarning.widthRatio && (
+                  <p style={{ 
+                    color: 'var(--text-secondary)', 
+                    fontSize: '12px',
+                    fontFamily: "'JetBrains Mono', monospace"
+                  }}>
+                    Width ratio: {result.viewportWarning.widthRatio}x | Aspect delta: {result.viewportWarning.aspectRatioDelta?.toFixed(2)}
+                  </p>
+                )}
+              </div>
+            )}
+            
+            {/* Normalization Info */}
+            {result.metadata.normalizationApplied && (
+              <div className="card-terminal" style={{ padding: '20px', borderRadius: '12px' }}>
+                <div style={{ 
+                  fontSize: '11px', 
+                  textTransform: 'uppercase', 
+                  letterSpacing: '2px',
+                  color: 'var(--accent-cyan)',
+                  marginBottom: '16px',
+                  fontWeight: 700,
+                  fontFamily: "'Orbitron', sans-serif"
+                }}>Normalization Details</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', fontSize: '13px' }}>
+                  <div>
+                    <div style={{ color: 'var(--text-secondary)', marginBottom: '4px' }}>Design Size</div>
+                    <div style={{ color: 'var(--accent-neon)', fontFamily: "'JetBrains Mono', monospace" }}>
+                      {result.metadata.designDimensions?.width} × {result.metadata.designDimensions?.height}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ color: 'var(--text-secondary)', marginBottom: '4px' }}>Implementation Size</div>
+                    <div style={{ color: 'var(--accent-cyan)', fontFamily: "'JetBrains Mono', monospace" }}>
+                      {result.metadata.implementationDimensions?.width} × {result.metadata.implementationDimensions?.height}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ color: 'var(--text-secondary)', marginBottom: '4px' }}>Sizing Mode</div>
+                    <div style={{ color: '#fff', fontFamily: "'JetBrains Mono', monospace", textTransform: 'capitalize' }}>
+                      {result.metadata.normalizationApplied.sizingMode.replace(/-/g, ' ')}
+                    </div>
+                  </div>
+                  {result.metadata.screenshotViewport && (
+                    <div>
+                      <div style={{ color: 'var(--text-secondary)', marginBottom: '4px' }}>Screenshot Viewport</div>
+                      <div style={{ color: '#fff', fontFamily: "'JetBrains Mono', monospace" }}>
+                        {result.metadata.screenshotViewport.label}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
               <div className="card-terminal" style={{ padding: '20px', borderRadius: '12px' }}>

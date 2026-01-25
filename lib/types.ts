@@ -11,6 +11,25 @@ export const VIEWPORT_PRESETS: Record<string, ViewportPreset> = {
   mobile: { width: 390, height: 844, label: "Mobile (390x844)" },
 };
 
+// Sizing mode for handling dimension mismatches
+export type SizingMode = 
+  | "match-width-crop"      // Resize to design width, crop height
+  | "match-width-letterbox" // Resize to design width, pad height
+  | "fit-inside"            // Scale to fit, pad remaining
+  | "manual-crop";          // User-defined crop rectangle
+
+export interface ImageDimensions {
+  width: number;
+  height: number;
+}
+
+export interface ViewportMismatchWarning {
+  detected: boolean;
+  widthRatio?: number;
+  aspectRatioDelta?: number;
+  suggestion?: string;
+}
+
 export interface ComparisonRequest {
   designImage: string; // base64 data URL
   implementationImage?: string; // base64 data URL (if upload)
@@ -18,6 +37,9 @@ export interface ComparisonRequest {
   viewport?: keyof typeof VIEWPORT_PRESETS;
   screenName?: string;
   platform?: "web" | "mobile";
+  sizingMode?: SizingMode; // How to handle dimension mismatches
+  designDimensions?: ImageDimensions; // Design image dimensions for normalization
+  cropRect?: BoundingBox; // Optional manual crop rectangle
 }
 
 export interface BoundingBox {
@@ -48,7 +70,15 @@ export interface ComparisonResult {
     screenName?: string;
     platform?: string;
     comparedAt: string;
+    designDimensions?: ImageDimensions;
+    implementationDimensions?: ImageDimensions;
+    normalizationApplied?: {
+      sizingMode: SizingMode;
+      targetDimensions: ImageDimensions;
+    };
+    screenshotViewport?: ViewportPreset;
   };
+  viewportWarning?: ViewportMismatchWarning;
 }
 
 export interface MarkdownReport {

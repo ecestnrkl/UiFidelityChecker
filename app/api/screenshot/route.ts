@@ -6,7 +6,7 @@ export const maxDuration = 30; // 30 second timeout
 
 export async function POST(request: NextRequest) {
   try {
-    const { url, viewport = "desktop" } = await request.json();
+    const { url, viewport = "desktop", customWidth, customHeight } = await request.json();
 
     if (!url) {
       return NextResponse.json(
@@ -15,16 +15,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate viewport
-    const viewportConfig = VIEWPORT_PRESETS[viewport as keyof typeof VIEWPORT_PRESETS];
-    if (!viewportConfig) {
-      return NextResponse.json(
-        { error: "Invalid viewport preset" },
-        { status: 400 }
-      );
-    }
+    let viewportConfig;
+    let effectiveWidth;
+    let effectiveHeight;
 
-    console.log(`📸 Capturing screenshot: ${url} at ${viewportConfig.label}`);
+    // Use custom dimensions if provided, otherwise use preset
+    if (customWidth && customHeight) {
+      effectiveWidth = customWidth;
+      effectiveHeight = customHeight;
+      viewportConfig = {
+        width: customWidth,
+        height: customHeight,
+        label: `Custom (${customWidth}x${customHeight})`,
+      };
+      console.log(`📸 Capturing screenshot: ${url} at custom ${viewportConfig.label}`);
+    } else {
+      // Validate viewport preset
+      viewportConfig = VIEWPORT_PRESETS[viewport as keyof typeof VIEWPORT_PRESETS];
+      if (!viewportConfig) {
+        return NextResponse.json(
+          { error: "Invalid viewport preset" },
+          { status: 400 }
+        );
+      }
+      effectiveWidth = viewportConfig.width;
+      effectiveHeight = viewportConfig.height;
+      console.log(`📸 Capturing screenshot: ${url} at ${viewportConfig.label}`);
+    }
 
     // Launch browser
     const browser = await chromium.launch({
@@ -33,8 +50,8 @@ export async function POST(request: NextRequest) {
 
     const context = await browser.newContext({
       viewport: {
-        width: viewportConfig.width,
-        height: viewportConfig.height,
+        width: effectiveWidth,
+        height: effectiveHeight,
       },
       deviceScaleFactor: 1,
       // Disable animations for consistent screenshots
